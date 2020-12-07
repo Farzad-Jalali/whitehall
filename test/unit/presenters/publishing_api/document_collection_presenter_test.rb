@@ -11,8 +11,18 @@ class PublishingApi::DocumentCollectionPresenterTest < ActiveSupport::TestCase
       show_brexit_no_deal_content_notice: true,
     )
 
+    @welsh_document_collection = create(
+      :document_collection,
+      title: "Welsh Document Collection title",
+      summary: "Welsh Document Collection summary",
+      primary_locale: "cy",
+      show_brexit_no_deal_content_notice: true,
+    )
+
     @presented_document_collection = PublishingApi::DocumentCollectionPresenter.new(@document_collection)
-    @presented_content = I18n.with_locale("de") { @presented_document_collection.content }
+    @presented_welsh_document_collection = PublishingApi::DocumentCollectionPresenter.new(@welsh_document_collection)
+    @presented_content = @presented_document_collection.content
+    @presented_welsh_content = I18n.with_locale("cy") { @presented_welsh_document_collection.content }
   end
 
   test "it presents a valid document_collection content item" do
@@ -33,6 +43,10 @@ class PublishingApi::DocumentCollectionPresenterTest < ActiveSupport::TestCase
 
   test "it presents the base_path" do
     assert_equal "/government/collections/document-collection-title", @presented_content[:base_path]
+  end
+
+  test "it presents the base_path with locale if non-english" do
+    assert_equal "/government/collections/welsh-document-collection-title.cy", @presented_welsh_content[:base_path]
   end
 
   test "it presents updated_at if public_timestamp is nil" do
@@ -56,7 +70,11 @@ class PublishingApi::DocumentCollectionPresenterTest < ActiveSupport::TestCase
   end
 
   test "it presents the global process wide locale as the locale of the document_collection" do
-    assert_equal "de", @presented_content[:locale]
+    assert_equal "en", @presented_content[:locale]
+  end
+
+  test "it presents the global process wide locale as the locale of the document_collection for non-English content" do
+    assert_equal "cy", @presented_welsh_content[:locale]
   end
 
   test "it presents no deal content notice" do
